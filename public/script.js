@@ -7,20 +7,14 @@ const closeModal = document.getElementById("close-modal");
 
 async function carregarImagens() {
   grid.innerHTML = "";
-  console.log("🔄 Buscando dados da API...");
 
   try {
     const res = await fetch("/api/notion");
     const data = await res.json();
 
-    console.log("📦 Dados recebidos:", data);
+    console.log("📦 Dados da API:", data);
 
-    if (!Array.isArray(data) || data.length === 0) {
-      console.warn("⚠️ Nenhum item retornado");
-      return;
-    }
-
-    data.forEach((item, index) => {
+    data.forEach(item => {
       if (!item.images || item.images.length === 0) return;
 
       const post = document.createElement("div");
@@ -31,7 +25,6 @@ async function carregarImagens() {
       img.src = item.images[0];
       img.alt = "Imagem do post";
 
-      // abrir modal
       img.addEventListener("click", () => {
         modal.style.display = "flex";
         modalImg.src = item.images[0];
@@ -41,8 +34,8 @@ async function carregarImagens() {
       grid.appendChild(post);
     });
 
-  } catch (error) {
-    console.error("🔥 Erro ao carregar imagens:", error);
+  } catch (err) {
+    console.error("Erro ao carregar imagens:", err);
   }
 }
 
