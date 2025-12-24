@@ -1,103 +1,66 @@
 const grid = document.getElementById("grid");
 const refreshBtn = document.getElementById("refresh");
 
-// Modal
 const modal = document.getElementById("modal");
 const modalImg = document.getElementById("modal-img");
 const closeModal = document.getElementById("close-modal");
 
-// Estado do carrossel
-let currentImages = [];
-let currentIndex = 0;
-
-// ===============================
-// CARREGAR POSTS
-// ===============================
-async function carregarPosts() {
+async function carregarImagens() {
   grid.innerHTML = "";
+  console.log("🔄 Buscando dados da API...");
 
   try {
     const res = await fetch("/api/notion");
-    const posts = await res.json();
+    const data = await res.json();
 
-    posts.forEach(post => {
-      if (!post.images || post.images.length === 0) return;
+    console.log("📦 Dados recebidos:", data);
 
-      const postDiv = document.createElement("div");
-      postDiv.className = "post";
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn("⚠️ Nenhum item retornado");
+      return;
+    }
+
+    data.forEach((item, index) => {
+      if (!item.images || item.images.length === 0) return;
+
+      const post = document.createElement("div");
+      post.className = "post";
 
       const img = document.createElement("img");
-      img.src = post.images[0];
       img.className = "grid-img";
+      img.src = item.images[0];
+      img.alt = "Imagem do post";
 
-      img.onclick = () => abrirModal(post.images);
+      // abrir modal
+      img.addEventListener("click", () => {
+        modal.style.display = "flex";
+        modalImg.src = item.images[0];
+      });
 
-      postDiv.appendChild(img);
-
-      // BOLINHAS NO GRID
-      if (post.images.length > 1) {
-        const dots = document.createElement("div");
-        dots.className = "dots";
-
-        post.images.forEach((_, i) => {
-          const dot = document.createElement("div");
-          dot.className = "dot";
-          if (i === 0) dot.classList.add("active");
-          dots.appendChild(dot);
-        });
-
-        postDiv.appendChild(dots);
-      }
-
-      grid.appendChild(postDiv);
+      post.appendChild(img);
+      grid.appendChild(post);
     });
 
-  } catch (err) {
-    console.error("Erro ao carregar posts:", err);
+  } catch (error) {
+    console.error("🔥 Erro ao carregar imagens:", error);
   }
 }
 
-// ===============================
-// MODAL
-// ===============================
-function abrirModal(images) {
-  currentImages = images;
-  currentIndex = 0;
-
-  atualizarImagemModal();
-
-  modal.style.display = "flex";
-}
-
-function atualizarImagemModal() {
-  modalImg.src = currentImages[currentIndex];
-}
-
-// ===============================
-// NAVEGAÇÃO DO CARROSSEL
-// ===============================
-document.addEventListener("keydown", e => {
-  if (modal.style.display !== "flex") return;
-
-  if (e.key === "ArrowRight") proximaImagem();
-  if (e.key === "ArrowLeft") imagemAnterior();
-  if (e.key === "Escape") fecharModal();
+// fechar modal
+closeModal.addEventListener("click", () => {
+  modal.style.display = "none";
+  modalImg.src = "";
 });
 
-function proximaImagem() {
-  if (currentImages.length <= 1) return;
-  currentIndex = (currentIndex + 1) % currentImages.length;
-  atualizarImagemModal();
-}
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    modal.style.display = "none";
+    modalImg.src = "";
+  }
+});
 
-function imagemAnterior() {
-  if (currentImages.length <= 1) return;
-  currentIndex =
-    (currentIndex - 1 + currentImages.length) % currentImages.length;
-  atualizarImagemModal();
-}
+// botão atualizar
+refreshBtn.addEventListener("click", carregarImagens);
 
-// ===============================
-// FECHAR MODAL
-// ===============================
-function fecharModal(
+// carregar ao abrir
+carregarImagens();
