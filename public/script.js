@@ -1,33 +1,47 @@
 const grid = document.getElementById("grid");
-const refresh = document.getElementById("refresh");
+const refreshBtn = document.getElementById("refresh");
 
-async function loadImages() {
-  grid.innerHTML = "carregando...";
+// ===== MODAL =====
+const modal = document.getElementById("modal");
+const modalImg = document.getElementById("modal-img");
+const closeModal = document.getElementById("close-modal");
 
-  try {
-    const res = await fetch("/api/notion");
-    const data = await res.json();
+closeModal.addEventListener("click", () => {
+  modal.style.display = "none";
+});
 
-    grid.innerHTML = "";
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    modal.style.display = "none";
+  }
+});
 
-    data.forEach(item => {
-      if (!item.images || item.images.length === 0) return;
+// ===== FUNÇÃO PRINCIPAL =====
+async function carregarImagens() {
+  grid.innerHTML = "";
 
-      const div = document.createElement("div");
-      div.className = "item";
+  const res = await fetch("/api/notion");
+  const data = await res.json();
 
-      const img = document.createElement("img");
-      img.src = item.images[0];
+  data.forEach(item => {
+    if (!item.images || item.images.length === 0) return;
 
-      div.appendChild(img);
-      grid.appendChild(div);
+    const img = document.createElement("img");
+    img.src = item.images[0];
+    img.className = "grid-img";
+
+    // 👉 abrir imagem grande
+    img.addEventListener("click", () => {
+      modalImg.src = item.images[0];
+      modal.style.display = "flex";
     });
 
-  } catch (err) {
-    grid.innerHTML = "erro ao carregar";
-    console.error(err);
-  }
+    grid.appendChild(img);
+  });
 }
 
-refresh.onclick = loadImages;
-loadImages();
+// ===== BOTÃO ATUALIZAR =====
+refreshBtn.addEventListener("click", carregarImagens);
+
+// ===== INICIAL =====
+carregarImagens();
