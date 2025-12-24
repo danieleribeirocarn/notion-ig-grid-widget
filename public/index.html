@@ -87,6 +87,38 @@
       color: #fff;
       cursor: pointer;
     }
+
+    .carousel-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.carousel-icon::before,
+.carousel-icon::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid white;
+  border-radius: 3px;
+  background: transparent;
+}
+
+.carousel-icon::before {
+  top: 0;
+  left: 0;
+}
+
+.carousel-icon::after {
+  top: 4px;
+  left: 4px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
   </style>
 </head>
 
