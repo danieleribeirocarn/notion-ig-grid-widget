@@ -3,16 +3,20 @@ async function carregarPosts() {
   const posts = await res.json();
 
   const grid = document.getElementById("grid");
+  grid.innerHTML = "";
 
-  posts
-    .filter(post => post.show)
-    .slice(0, 9)
-    .forEach(post => {
-      const img = document.createElement("img");
-      img.src = post.image;
-      img.title = post.caption;
-      grid.appendChild(img);
-    });
+  posts.forEach(post => {
+    if (!post.image) return;
+
+    const item = document.createElement("div");
+    item.className = "grid-item";
+
+    item.innerHTML = `
+      <img src="${post.image}" alt="Post do Instagram" />
+    `;
+
+    grid.appendChild(item);
+  });
 }
 
 carregarPosts();
