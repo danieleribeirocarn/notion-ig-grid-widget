@@ -1,52 +1,46 @@
 import { Client } from "@notionhq/client";
 
+const notion = new Client({
+  auth: process.env.NOTION_TOKEN,
+});
+
+const DATABASE_ID = process.env.NOTION_DATABASE_ID;
+
 export default async function handler(req, res) {
   try {
-    const notion = new Client({
-      auth: process.env.NOTION_TOKEN,
-    });
-
     const response = await notion.databases.query({
-      database_id: process.env.NOTION_DATABASE_ID,
-
-      // 🔹 filtro: só itens marcados em "Mostrar"
+      database_id: DATABASE_ID,
       filter: {
         property: "Mostrar",
         checkbox: {
           equals: true,
         },
       },
-
-      // 🔹 ordenação pela data
       sorts: [
         {
           property: "Data da postagem",
           direction: "descending",
         },
       ],
-
-      page_size: 30, // 10 linhas de 3 colunas
+      page_size: 30,
     });
 
-    const posts = response.results.map((page) => {
-      const props = page.properties;
+    const items = response.results.map(page => {
+      const files = page.properties["Profile Picture"]?.files || [];
+
+      const images = files.map(f =>
+        f.type === "file" ? f.file.url : f.external.url
+      );
 
       return {
         id: page.id,
-
-        image:
-          props["Profile Picture"]?.files?.[0]?.file?.url ||
-          props["Profile Picture"]?.files?.[0]?.external?.url ||
-          null,
-
-        caption:
-          props.Text?.rich_text?.[0]?.plain_text || "",
+        images,
       };
     });
 
-    res.status(200).json(posts);
+    res.status(200).json(items);
   } catch (error) {
-    console.error("Erro Notion API:", error);
-    res.status(500).json({ error: "Erro ao buscar dados" });
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar dados do Notion" });
   }
 }
