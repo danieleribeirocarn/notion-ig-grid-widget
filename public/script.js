@@ -8,8 +8,7 @@ const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 
 let posts = [];
-let currentPostIndex = 0;
-let currentImageIndex = 0;
+let draggedPostIndex = null;
 
 async function carregarPosts() {
   grid.innerHTML = "";
@@ -21,7 +20,6 @@ async function carregarPosts() {
     const postDiv = document.createElement("div");
     postDiv.className = "post";
     postDiv.draggable = true;
-    postDiv.dataset.index = index;
 
     const img = document.createElement("img");
     img.src = post.images[0];
@@ -31,10 +29,10 @@ async function carregarPosts() {
 
     postDiv.appendChild(img);
 
-    // 🔵 Ícone de carrossel
+    /* Ícone de carrossel */
     if (post.images.length > 1) {
       const icon = document.createElement("div");
-      icon.innerHTML = "⧉";
+      icon.textContent = "⧉";
       icon.style.position = "absolute";
       icon.style.top = "6px";
       icon.style.right = "6px";
@@ -43,33 +41,16 @@ async function carregarPosts() {
       postDiv.appendChild(icon);
     }
 
-    // 🔵 Dots
-    if (post.images.length > 1) {
-      const dots = document.createElement("div");
-      dots.className = "dots";
-
-      post.images.forEach((_, i) => {
-        const dot = document.createElement("div");
-        dot.className = "dot";
-        if (i === 0) dot.classList.add("active");
-        dots.appendChild(dot);
-      });
-
-      postDiv.appendChild(dots);
-    }
-
-    adicionarDragEvents(postDiv);
+    adicionarDrag(postDiv, index);
     grid.appendChild(postDiv);
   });
 }
 
-/* ===== DRAG & DROP ===== */
+/* ===== DRAG & DROP REAL ===== */
 
-let draggedIndex = null;
-
-function adicionarDragEvents(element) {
+function adicionarDrag(element, index) {
   element.addEventListener("dragstart", () => {
-    draggedIndex = Number(element.dataset.index);
+    draggedPostIndex = index;
     element.classList.add("dragging");
   });
 
@@ -82,18 +63,50 @@ function adicionarDragEvents(element) {
   });
 
   element.addEventListener("drop", () => {
-    const targetIndex = Number(element.dataset.index);
+    if (draggedPostIndex === null || draggedPostIndex === index) return;
 
-    if (draggedIndex === null || draggedIndex === targetIndex) return;
+    const draggedItem = posts.splice(draggedPostIndex, 1)[0];
+    posts.splice(index, 0, draggedItem);
 
-    const item = posts.splice(draggedIndex, 1)[0];
-    posts.splice(targetIndex, 0, item);
+    draggedPostIndex = null;
+    renderReorderedPosts();
+  });
+}
 
-    carregarPosts();
+function renderReorderedPosts() {
+  grid.innerHTML = "";
+  posts.forEach((post, index) => {
+    const postDiv = document.createElement("div");
+    postDiv.className = "post";
+    postDiv.draggable = true;
+
+    const img = document.createElement("img");
+    img.src = post.images[0];
+    img.className = "grid-img";
+    img.addEventListener("click", () => abrirModal(index, 0));
+
+    postDiv.appendChild(img);
+
+    if (post.images.length > 1) {
+      const icon = document.createElement("div");
+      icon.textContent = "⧉";
+      icon.style.position = "absolute";
+      icon.style.top = "6px";
+      icon.style.right = "6px";
+      icon.style.color = "white";
+      icon.style.fontSize = "14px";
+      postDiv.appendChild(icon);
+    }
+
+    adicionarDrag(postDiv, index);
+    grid.appendChild(postDiv);
   });
 }
 
 /* ===== MODAL ===== */
+
+let currentPostIndex = 0;
+let currentImageIndex = 0;
 
 function abrirModal(postIndex, imageIndex) {
   currentPostIndex = postIndex;
