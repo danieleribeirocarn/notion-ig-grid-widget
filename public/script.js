@@ -1,18 +1,10 @@
 async function carregarPosts() {
-  console.log("Iniciando carregamento...");
+  console.log("🔄 Atualizando posts...");
 
   const response = await fetch("/api/notion");
   const posts = await response.json();
 
-  console.log("Posts recebidos:", posts);
-
   const grid = document.getElementById("grid");
-
-  if (!grid) {
-    console.error("Elemento #grid não encontrado");
-    return;
-  }
-
   grid.innerHTML = "";
 
   posts.forEach(post => {
@@ -20,11 +12,18 @@ async function carregarPosts() {
 
     const img = document.createElement("img");
     img.src = post.image;
-    img.style.width = "100%";
-    img.style.display = "block";
+    img.alt = "Imagem do Notion";
 
     grid.appendChild(img);
   });
+
+  console.log("✅ Grid atualizado");
 }
 
+// carregar automaticamente ao abrir
 carregarPosts();
+
+// BOTÃO ATUALIZAR
+document.getElementById("refreshBtn").addEventListener("click", () => {
+  carregarPosts();
+});
