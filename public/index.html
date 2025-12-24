@@ -30,6 +30,32 @@
       object-fit: cover;
       cursor: pointer;
     }
+
+    /* ===== MODAL ===== */
+    #modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #modal img {
+      max-width: 90%;
+      max-height: 90%;
+    }
+
+    #closeModal {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      font-size: 32px;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+    }
   </style>
 </head>
 
@@ -40,6 +66,12 @@
 
   <!-- GRID -->
   <div id="grid"></div>
+
+  <!-- MODAL -->
+  <div id="modal">
+    <span id="closeModal">&times;</span>
+    <img id="modalImage" />
+  </div>
 
   <script src="script.js"></script>
 </body>
