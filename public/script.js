@@ -12,8 +12,6 @@ async function loadImages() {
   const posts = await res.json();
 
   posts.forEach(post => {
-    if (!post.images || post.images.length === 0) return;
-
     const postDiv = document.createElement("div");
     postDiv.className = "post";
 
@@ -23,15 +21,22 @@ async function loadImages() {
     img.className = "grid-img";
     img.src = post.images[0];
 
-    // ===== CLIQUE → MODAL =====
-    img.onclick = () => {
-      modalImg.src = post.images[currentIndex];
+    // ===== ABRIR MODAL =====
+    img.addEventListener("click", () => {
       modal.style.display = "flex";
-    };
+      modalImg.src = post.images[currentIndex];
+    });
 
     postDiv.appendChild(img);
 
-    // ===== DOTS (SE TIVER MAIS DE 1 IMAGEM) =====
+    // ===== ÍCONE DE CARROSSEL =====
+    if (post.images.length > 1) {
+      const icon = document.createElement("div");
+      icon.className = "carousel-icon";
+      postDiv.appendChild(icon);
+    }
+
+    // ===== DOTS =====
     if (post.images.length > 1) {
       const dots = document.createElement("div");
       dots.className = "dots";
@@ -41,16 +46,12 @@ async function loadImages() {
         dot.className = "dot";
         if (index === 0) dot.classList.add("active");
 
-        dot.onclick = (e) => {
-          e.stopPropagation(); // não abre modal
+        dot.addEventListener("click", e => {
+          e.stopPropagation();
           currentIndex = index;
           img.src = post.images[currentIndex];
-
-          dots.querySelectorAll(".dot").forEach(d =>
-            d.classList.remove("active")
-          );
-          dot.classList.add("active");
-        };
+          updateDots(dots, currentIndex);
+        });
 
         dots.appendChild(dot);
       });
@@ -62,20 +63,27 @@ async function loadImages() {
   });
 }
 
-// ===== FECHAR MODAL =====
-closeModal.onclick = () => {
+function updateDots(dotsContainer, activeIndex) {
+  [...dotsContainer.children].forEach((dot, index) => {
+    dot.classList.toggle("active", index === activeIndex);
+  });
+}
+
+// ===== MODAL CLOSE =====
+closeModal.addEventListener("click", () => {
   modal.style.display = "none";
   modalImg.src = "";
-};
+});
 
-modal.onclick = (e) => {
+modal.addEventListener("click", e => {
   if (e.target === modal) {
     modal.style.display = "none";
     modalImg.src = "";
   }
-};
+});
 
-refreshBtn.onclick = loadImages;
+// ===== BOTÃO ATUALIZAR =====
+refreshBtn.addEventListener("click", loadImages);
 
-// PRIMEIRA CARGA
+// ===== INIT =====
 loadImages();
