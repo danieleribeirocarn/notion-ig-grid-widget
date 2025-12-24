@@ -24,10 +24,14 @@
     }
 
     #grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 4px;
-    }
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+
+  max-height: calc(100vh - 80px); /* espaço para o botão */
+  overflow-y: auto;
+}
+
 
     .grid-img {
       width: 100%;
