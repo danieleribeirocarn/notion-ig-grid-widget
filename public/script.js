@@ -9,65 +9,65 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadImages() {
     grid.innerHTML = "";
 
-    try {
-      const res = await fetch("/api/notion");
-      const posts = await res.json();
+    const res = await fetch("/api/notion");
+    const posts = await res.json();
 
-      posts.forEach(post => {
-        if (!post.images || post.images.length === 0) return;
+    posts.forEach(post => {
+      if (!post.images || post.images.length === 0) return;
 
-        const postDiv = document.createElement("div");
-        postDiv.className = "post";
+      const postDiv = document.createElement("div");
+      postDiv.className = "post";
 
-        let currentIndex = 0;
+      let currentIndex = 0;
 
-        const img = document.createElement("img");
-        img.className = "grid-img";
-        img.src = post.images[0];
-        img.alt = "Post image";
+      const img = document.createElement("img");
+      img.className = "grid-img";
+      img.src = post.images[0];
+      img.loading = "lazy";
 
-        img.addEventListener("click", () => {
-          modal.style.display = "flex";
-          modalImg.src = post.images[currentIndex];
-        });
+      // ✅ ABRIR MODAL (SEM CONFLITO)
+      img.addEventListener("click", () => {
+        modalImg.src = post.images[currentIndex];
+        modal.style.display = "flex";
+      });
 
-        postDiv.appendChild(img);
+      postDiv.appendChild(img);
 
-        if (post.images.length > 1) {
-          const dots = document.createElement("div");
-          dots.className = "dots";
+      // ===== CARROSSEL =====
+      if (post.images.length > 1) {
+        const dots = document.createElement("div");
+        dots.className = "dots";
 
-          post.images.forEach((_, index) => {
-            const dot = document.createElement("span");
-            dot.className = "dot";
-            if (index === 0) dot.classList.add("active");
+        post.images.forEach((_, index) => {
+          const dot = document.createElement("span");
+          dot.className = "dot";
+          if (index === 0) dot.classList.add("active");
 
-            dot.addEventListener("click", (e) => {
-              e.stopPropagation();
-              currentIndex = index;
-              img.src = post.images[currentIndex];
+          dot.addEventListener("click", (e) => {
+            e.stopPropagation(); // NÃO abre modal
+            currentIndex = index;
+            img.src = post.images[index];
 
-              dots.querySelectorAll(".dot").forEach(d =>
-                d.classList.remove("active")
-              );
-              dot.classList.add("active");
-            });
-
-            dots.appendChild(dot);
+            dots.querySelectorAll(".dot").forEach(d =>
+              d.classList.remove("active")
+            );
+            dot.classList.add("active");
           });
 
-          postDiv.appendChild(dots);
-        }
+          dots.appendChild(dot);
+        });
 
-        grid.appendChild(postDiv);
-      });
-    } catch (err) {
-      console.error("Erro ao carregar imagens:", err);
-    }
+        postDiv.appendChild(dots);
+      }
+
+      grid.appendChild(postDiv);
+    });
   }
 
+  // ===== BOTÃO ATUALIZAR =====
   refreshBtn.addEventListener("click", loadImages);
 
+  // ===== FECHAR MODAL =====
   closeModal.addEventListener("click", () => {
     modal.style.display = "none";
     modalImg.src = "";
