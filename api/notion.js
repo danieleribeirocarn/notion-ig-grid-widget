@@ -9,7 +9,6 @@ export default async function handler(req, res) {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_DATABASE_ID,
 
-      // 🔹 FILTRO: só o que estiver marcado em "Mostrar"
       filter: {
         property: "Mostrar",
         checkbox: {
@@ -17,7 +16,6 @@ export default async function handler(req, res) {
         },
       },
 
-      // 🔹 ORDENAÇÃO: mais recentes primeiro
       sorts: [
         {
           property: "Data da postagem",
@@ -45,4 +43,22 @@ export default async function handler(req, res) {
         status:
           props.Status?.status?.name || "",
 
-        image
+        image:
+          props["Profile Picture"]?.files?.[0]?.file?.url ||
+          props["Profile Picture"]?.files?.[0]?.external?.url ||
+          null,
+
+        show:
+          props["Mostrar "]?.checkbox || false,
+      };
+    });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error("ERRO NOTION API:", error);
+    res.status(500).json({
+      message: "Erro ao buscar dados do Notion",
+      error: error.message,
+    });
+  }
+}
