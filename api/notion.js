@@ -9,6 +9,7 @@ export default async function handler(req, res) {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_DATABASE_ID,
 
+      // 🔹 filtro: só itens marcados em "Mostrar"
       filter: {
         property: "Mostrar",
         checkbox: {
@@ -16,6 +17,7 @@ export default async function handler(req, res) {
         },
       },
 
+      // 🔹 ordenação pela data
       sorts: [
         {
           property: "Data da postagem",
@@ -23,7 +25,7 @@ export default async function handler(req, res) {
         },
       ],
 
-      page_size: 30, // 🔹 limite total
+      page_size: 30, // 10 linhas de 3 colunas
     });
 
     const posts = response.results.map((page) => {
@@ -31,34 +33,20 @@ export default async function handler(req, res) {
 
       return {
         id: page.id,
-        title:
-          props.Name?.title?.[0]?.plain_text || "Sem título",
-
-        caption:
-          props.Text?.rich_text?.[0]?.plain_text || "",
-
-        date:
-          props["Data da postagem"]?.date?.start || null,
-
-        status:
-          props.Status?.status?.name || "",
 
         image:
           props["Profile Picture"]?.files?.[0]?.file?.url ||
           props["Profile Picture"]?.files?.[0]?.external?.url ||
           null,
 
-        show:
-          props["Mostrar "]?.checkbox || false,
+        caption:
+          props.Text?.rich_text?.[0]?.plain_text || "",
       };
     });
 
     res.status(200).json(posts);
   } catch (error) {
-    console.error("ERRO NOTION API:", error);
-    res.status(500).json({
-      message: "Erro ao buscar dados do Notion",
-      error: error.message,
-    });
+    console.error("Erro Notion API:", error);
+    res.status(500).json({ error: "Erro ao buscar dados" });
   }
 }
