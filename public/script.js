@@ -8,52 +8,53 @@ const closeModal = document.getElementById("close-modal");
 async function carregarImagens() {
   grid.innerHTML = "";
 
-  try {
-    const res = await fetch("/api/notion");
-    const data = await res.json();
+  const res = await fetch("/api/notion");
+  const data = await res.json();
 
-    console.log("📦 Dados da API:", data);
+  data.forEach(item => {
+    if (!item.images || item.images.length === 0) return;
 
-    data.forEach(item => {
-      if (!item.images || item.images.length === 0) return;
+    const post = document.createElement("div");
+    post.className = "post";
 
-      const post = document.createElement("div");
-      post.className = "post";
+    const img = document.createElement("img");
+    img.className = "grid-img";
+    img.src = item.images[0];
 
-      const img = document.createElement("img");
-      img.className = "grid-img";
-      img.src = item.images[0];
-      img.alt = "Imagem do post";
-
-      img.addEventListener("click", () => {
-        modal.style.display = "flex";
-        modalImg.src = item.images[0];
-      });
-
-      post.appendChild(img);
-      grid.appendChild(post);
+    img.addEventListener("click", () => {
+      abrirModal(item.images[0]);
     });
 
-  } catch (err) {
-    console.error("Erro ao carregar imagens:", err);
-  }
+    post.appendChild(img);
+    grid.appendChild(post);
+  });
+}
+
+function abrirModal(src) {
+  // limpa antes
+  modalImg.src = "";
+  modal.style.display = "flex";
+
+  const tempImg = new Image();
+  tempImg.onload = () => {
+    modalImg.src = src;
+  };
+  tempImg.src = src;
 }
 
 // fechar modal
-closeModal.addEventListener("click", () => {
-  modal.style.display = "none";
-  modalImg.src = "";
+closeModal.addEventListener("click", fecharModal);
+modal.addEventListener("click", e => {
+  if (e.target === modal) fecharModal();
 });
 
-modal.addEventListener("click", (e) => {
-  if (e.target === modal) {
-    modal.style.display = "none";
-    modalImg.src = "";
-  }
-});
+function fecharModal() {
+  modal.style.display = "none";
+  modalImg.src = "";
+}
 
 // botão atualizar
 refreshBtn.addEventListener("click", carregarImagens);
 
-// carregar ao abrir
+// carregar inicial
 carregarImagens();
