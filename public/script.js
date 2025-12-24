@@ -6,17 +6,10 @@ const modal = document.getElementById("modal");
 const modalImg = document.getElementById("modal-img");
 const closeModal = document.getElementById("close-modal");
 
-closeModal.addEventListener("click", () => {
-  modal.style.display = "none";
-});
+closeModal.onclick = () => modal.style.display = "none";
+modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
 
-modal.addEventListener("click", (e) => {
-  if (e.target === modal) {
-    modal.style.display = "none";
-  }
-});
-
-// ===== FUNÇÃO PRINCIPAL =====
+// ===== FUNÇÃO =====
 async function carregarImagens() {
   grid.innerHTML = "";
 
@@ -26,22 +19,58 @@ async function carregarImagens() {
   data.forEach(item => {
     if (!item.images || item.images.length === 0) return;
 
+    let index = 0;
+
+    // CONTAINER DO POST
+    const post = document.createElement("div");
+    post.className = "post";
+
+    // IMAGEM
     const img = document.createElement("img");
     img.src = item.images[0];
     img.className = "grid-img";
 
-    // 👉 abrir imagem grande
-    img.addEventListener("click", () => {
-      modalImg.src = item.images[0];
+    img.onclick = () => {
+      modalImg.src = item.images[index];
       modal.style.display = "flex";
-    });
+    };
 
-    grid.appendChild(img);
+    post.appendChild(img);
+
+    // ===== BOLINHAS (se tiver mais de uma imagem)
+    if (item.images.length > 1) {
+      const dots = document.createElement("div");
+      dots.className = "dots";
+
+      item.images.forEach((_, i) => {
+        const dot = document.createElement("span");
+        dot.className = i === 0 ? "dot active" : "dot";
+
+        dot.onclick = e => {
+          e.stopPropagation();
+          index = i;
+          img.src = item.images[index];
+          updateDots(dots, index);
+        };
+
+        dots.appendChild(dot);
+      });
+
+      post.appendChild(dots);
+    }
+
+    grid.appendChild(post);
   });
 }
 
-// ===== BOTÃO ATUALIZAR =====
-refreshBtn.addEventListener("click", carregarImagens);
+function updateDots(container, activeIndex) {
+  [...container.children].forEach((dot, i) => {
+    dot.classList.toggle("active", i === activeIndex);
+  });
+}
 
-// ===== INICIAL =====
+// ===== BOTÃO =====
+refreshBtn.onclick = carregarImagens;
+
+// ===== INIT =====
 carregarImagens();
