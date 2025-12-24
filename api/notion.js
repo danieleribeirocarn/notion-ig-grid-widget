@@ -14,7 +14,20 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    return res.status(200).json(data);
+    const posts = data.results.map((page) => {
+      return {
+        id: page.id,
+        title: page.properties.Name?.title[0]?.plain_text || "",
+        caption: page.properties.Text?.rich_text[0]?.plain_text || "",
+        date: page.properties["Data da postagem"]?.date?.start || "",
+        status: page.properties.Status?.status?.name || "",
+        image:
+          page.properties["Profile Picture"]?.files[0]?.file?.url || "",
+        show: page.properties["Mostrar "]?.checkbox ?? true
+      };
+    });
+
+    return res.status(200).json(posts);
   } catch (error) {
     return res.status(500).json({
       error: "Erro ao buscar dados do Notion",
