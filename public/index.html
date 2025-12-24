@@ -1,83 +1,69 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <title>Notion IG Grid</title>
+  <title>IG Grid</title>
 
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 16px;
+      font-family: sans-serif;
     }
 
-    button {
-      padding: 8px 14px;
-      font-size: 14px;
-      cursor: pointer;
-      margin-bottom: 16px;
-    }
-
-    #grid {
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
     }
 
-    #grid img {
-      width: 100%;
+    .item {
+      position: relative;
       aspect-ratio: 1 / 1;
-      object-fit: cover;
+      overflow: hidden;
       cursor: pointer;
     }
 
-    /* ===== MODAL ===== */
-    #modal {
+    .item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ÍCONE DE CARROSSEL */
+    .carousel-icon {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 12px;
+      padding: 4px 6px;
+      border-radius: 12px;
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      display: none;
-      align-items: center;
+      background: rgba(0,0,0,0.9);
       justify-content: center;
+      align-items: center;
       z-index: 1000;
     }
 
-    #carousel {
-      position: relative;
+    .modal.active {
+      display: flex;
+    }
+
+    .modal img {
       max-width: 90%;
       max-height: 90%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
-    #carousel img {
-      max-width: 100%;
-      max-height: 100%;
-    }
-
-    .arrow {
+    .dots {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 40px;
-      color: white;
-      cursor: pointer;
-      user-select: none;
-      padding: 8px;
-    }
-
-    .arrow.left {
-      left: -50px;
-    }
-
-    .arrow.right {
-      right: -50px;
-    }
-
-    #dots {
-      position: absolute;
-      bottom: -30px;
+      bottom: 20px;
       display: flex;
       gap: 6px;
     }
@@ -86,42 +72,21 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: gray;
+      background: rgba(255,255,255,0.4);
     }
 
     .dot.active {
       background: white;
     }
-
-    #closeModal {
-      position: absolute;
-      top: 20px;
-      right: 24px;
-      font-size: 32px;
-      color: white;
-      cursor: pointer;
-      user-select: none;
-    }
   </style>
 </head>
 
 <body>
+  <div class="grid" id="grid"></div>
 
-  <button id="refreshBtn">Atualizar</button>
-
-  <div id="grid"></div>
-
-  <!-- MODAL -->
-  <div id="modal">
-    <span id="closeModal">&times;</span>
-
-    <div id="carousel">
-      <span class="arrow left" id="prev">&#10094;</span>
-      <img id="modalImage" />
-      <span class="arrow right" id="next">&#10095;</span>
-
-      <div id="dots"></div>
-    </div>
+  <div class="modal" id="modal">
+    <img id="modalImage">
+    <div class="dots" id="dots"></div>
   </div>
 
   <script src="script.js"></script>
