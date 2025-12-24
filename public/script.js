@@ -7,148 +7,124 @@ const closeModal = document.getElementById("close-modal");
 const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 
-let modalImages = [];
-let modalIndex = 0;
+let posts = [];
+let currentPostIndex = 0;
+let currentImageIndex = 0;
 
-// ===== LOAD GRID =====
-async function loadImages() {
+async function carregarPosts() {
   grid.innerHTML = "";
 
   const res = await fetch("/api/notion");
-  const posts = await res.json();
+  posts = await res.json();
 
-  posts.forEach(post => {
+  posts.forEach((post, index) => {
     const postDiv = document.createElement("div");
     postDiv.className = "post";
-
-    let currentIndex = 0;
+    postDiv.draggable = true;
+    postDiv.dataset.index = index;
 
     const img = document.createElement("img");
-    img.className = "grid-img";
     img.src = post.images[0];
+    img.className = "grid-img";
 
-    img.addEventListener("click", () => {
-      modalImages = post.images;
-      modalIndex = currentIndex;
-      openModal();
-    });
+    img.addEventListener("click", () => abrirModal(index, 0));
 
     postDiv.appendChild(img);
 
-    // Ícone carrossel
+    // 🔵 Ícone de carrossel
     if (post.images.length > 1) {
       const icon = document.createElement("div");
-      icon.className = "carousel-icon";
+      icon.innerHTML = "⧉";
+      icon.style.position = "absolute";
+      icon.style.top = "6px";
+      icon.style.right = "6px";
+      icon.style.color = "white";
+      icon.style.fontSize = "14px";
       postDiv.appendChild(icon);
     }
 
-    // Dots
+    // 🔵 Dots
     if (post.images.length > 1) {
       const dots = document.createElement("div");
       dots.className = "dots";
 
-      post.images.forEach((_, index) => {
+      post.images.forEach((_, i) => {
         const dot = document.createElement("div");
         dot.className = "dot";
-        if (index === 0) dot.classList.add("active");
-
-        dot.addEventListener("click", e => {
-          e.stopPropagation();
-          currentIndex = index;
-          img.src = post.images[currentIndex];
-          updateDots(dots, currentIndex);
-        });
-
+        if (i === 0) dot.classList.add("active");
         dots.appendChild(dot);
       });
 
       postDiv.appendChild(dots);
     }
 
+    adicionarDragEvents(postDiv);
     grid.appendChild(postDiv);
   });
 }
 
-// ===== MODAL =====
-function openModal() {
-  modal.style.display = "flex";
-  modalImg.src = modalImages[modalIndex];
-  updateNavVisibility();
-}
+/* ===== DRAG & DROP ===== */
 
-function closeModalFn() {
-  modal.style.display = "none";
-  modalImg.src = "";
-}
+let draggedIndex = null;
 
-function showNext() {
-  if (modalImages.length <= 1) return;
-  modalIndex = (modalIndex + 1) % modalImages.length;
-  modalImg.src = modalImages[modalIndex];
-}
+function adicionarDragEvents(element) {
+  element.addEventListener("dragstart", () => {
+    draggedIndex = Number(element.dataset.index);
+    element.classList.add("dragging");
+  });
 
-function showPrev() {
-  if (modalImages.length <= 1) return;
-  modalIndex =
-    (modalIndex - 1 + modalImages.length) % modalImages.length;
-  modalImg.src = modalImages[modalIndex];
-}
+  element.addEventListener("dragend", () => {
+    element.classList.remove("dragging");
+  });
 
-function updateNavVisibility() {
-  const visible = modalImages.length > 1;
-  prevBtn.style.display = visible ? "block" : "none";
-  nextBtn.style.display = visible ? "block" : "none";
-}
+  element.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
 
-// ===== EVENTS =====
-closeModal.addEventListener("click", closeModalFn);
-modal.addEventListener("click", e => {
-  if (e.target === modal) closeModalFn();
-});
+  element.addEventListener("drop", () => {
+    const targetIndex = Number(element.dataset.index);
 
-nextBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  showNext();
-});
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
 
-prevBtn.addEventListener("click", e => {
-  e.stopPropagation();
-  showPrev();
-});
+    const item = posts.splice(draggedIndex, 1)[0];
+    posts.splice(targetIndex, 0, item);
 
-// Teclado
-document.addEventListener("keydown", e => {
-  if (modal.style.display !== "flex") return;
-  if (e.key === "ArrowRight") showNext();
-  if (e.key === "ArrowLeft") showPrev();
-  if (e.key === "Escape") closeModalFn();
-});
-
-// ===== SWIPE (mobile) =====
-let touchStartX = 0;
-
-modalImg.addEventListener("touchstart", e => {
-  touchStartX = e.changedTouches[0].screenX;
-});
-
-modalImg.addEventListener("touchend", e => {
-  const touchEndX = e.changedTouches[0].screenX;
-  const diff = touchStartX - touchEndX;
-
-  if (Math.abs(diff) > 50) {
-    diff > 0 ? showNext() : showPrev();
-  }
-});
-
-// ===== UTILS =====
-function updateDots(dotsContainer, activeIndex) {
-  [...dotsContainer.children].forEach((dot, index) => {
-    dot.classList.toggle("active", index === activeIndex);
+    carregarPosts();
   });
 }
 
-// ===== REFRESH =====
-refreshBtn.addEventListener("click", loadImages);
+/* ===== MODAL ===== */
 
-// ===== INIT =====
-loadImages();
+function abrirModal(postIndex, imageIndex) {
+  currentPostIndex = postIndex;
+  currentImageIndex = imageIndex;
+  modalImg.src = posts[postIndex].images[imageIndex];
+  modal.style.display = "flex";
+}
+
+function atualizarModal() {
+  modalImg.src = posts[currentPostIndex].images[currentImageIndex];
+}
+
+nextBtn.onclick = () => {
+  const imgs = posts[currentPostIndex].images;
+  currentImageIndex = (currentImageIndex + 1) % imgs.length;
+  atualizarModal();
+};
+
+prevBtn.onclick = () => {
+  const imgs = posts[currentPostIndex].images;
+  currentImageIndex =
+    (currentImageIndex - 1 + imgs.length) % imgs.length;
+  atualizarModal();
+};
+
+closeModal.onclick = () => {
+  modal.style.display = "none";
+};
+
+/* ===== BOTÃO ATUALIZAR ===== */
+
+refreshBtn.onclick = carregarPosts;
+
+carregarPosts();
