@@ -1,14 +1,13 @@
 const grid = document.getElementById("grid");
-const modal = document.getElementById("modal");
-const modalImage = document.getElementById("modalImage");
-const dotsContainer = document.getElementById("dots");
+const refresh = document.getElementById("refresh");
 
-let currentImages = [];
-let currentIndex = 0;
+async function loadImages() {
+  grid.innerHTML = "carregando...";
 
-fetch("/api/notion")
-  .then(res => res.json())
-  .then(data => {
+  try {
+    const res = await fetch("/api/notion");
+    const data = await res.json();
+
     grid.innerHTML = "";
 
     data.forEach(item => {
@@ -21,46 +20,14 @@ fetch("/api/notion")
       img.src = item.images[0];
 
       div.appendChild(img);
-
-      // ÍCONE DE CARROSSEL (se tiver +1 imagem)
-      if (item.images.length > 1) {
-        const icon = document.createElement("div");
-        icon.className = "carousel-icon";
-        icon.innerText = "⧉";
-        div.appendChild(icon);
-      }
-
-      div.onclick = () => openModal(item.images);
-
       grid.appendChild(div);
     });
-  });
 
-function openModal(images) {
-  currentImages = images;
-  currentIndex = 0;
-
-  modal.classList.add("active");
-  updateModal();
+  } catch (err) {
+    grid.innerHTML = "erro ao carregar";
+    console.error(err);
+  }
 }
 
-function updateModal() {
-  modalImage.src = currentImages[currentIndex];
-
-  dotsContainer.innerHTML = "";
-
-  currentImages.forEach((_, i) => {
-    const dot = document.createElement("div");
-    dot.className = "dot" + (i === currentIndex ? " active" : "");
-    dot.onclick = () => {
-      currentIndex = i;
-      updateModal();
-    };
-    dotsContainer.appendChild(dot);
-  });
-}
-
-modal.onclick = () => {
-  modal.classList.remove("active");
-};
-
+refresh.onclick = loadImages;
+loadImages();
