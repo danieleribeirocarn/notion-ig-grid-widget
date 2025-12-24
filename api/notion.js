@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       sorts: [
         {
           property: "Data da postagem",
-          direction: "ascending",
+          direction: "descending",
         },
       ],
     });
